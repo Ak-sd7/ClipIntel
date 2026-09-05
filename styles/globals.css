@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@theme inline  {
+  --font-chokokutai: var(--chokokutai);
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}

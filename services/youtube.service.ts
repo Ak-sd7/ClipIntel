@@ -61,7 +61,7 @@ export const fetchMetaData = async(vdoId: string): Promise<MetadataResult> => {
 		console.error(err);
 		return {
 			status: 'api_error',
-			statusCode: 0
+			statusCode: 502
 		};
 	}
 }

@@ -24,9 +24,8 @@ export interface YouTubeVideoStatisticsRaw {
   commentCount?: string;
 }
 
-
 export interface YoutubeVideoRaw {
-	id: string;
+  id: string;
   snippet: YouTubeVideoSnippetRaw;
   statistics: YouTubeVideoStatisticsRaw;
 }
@@ -50,7 +49,7 @@ export interface VideoMetaData {
   publishedAt: string;
   viewCount: number;
   likeCount: number | null;
-  commentCount: number | null; 
+  commentCount: number | null;
   thumbnailUrl: string;
   platform: "youtube";
 }
@@ -60,3 +59,18 @@ export type MetadataResult =
   | { status: "not_found" }
   | { status: "api_error"; statusCode: number }
   | { status: "config_error" };
+
+export interface TranscriptItem {
+  text: string;
+  startInSeconds: number;
+  formattedTimestamp: string;
+  durationInSeconds: number;
+}
+
+export type TranscriptResult =
+  | { status: "success"; data: TranscriptItem[] }
+  | { status: "api_error"; statusCode: number }
+  | { status: "not_found" }
+  | { status: "no_transcript_available" }
+  | { status: "lang_not_available" }
+  | { status: "disabled" };

@@ -1,5 +1,6 @@
 import {
   fetchTranscript,
+  TranscriptSegment,
   YoutubeTranscriptDisabledError,
   YoutubeTranscriptNotAvailableError,
   YoutubeTranscriptNotAvailableLanguageError,
@@ -25,7 +26,7 @@ export const fetchVideoTranscript = async (
   lang: string = "en",
 ): Promise<TranscriptResult> => {
   try {
-    const data = await fetchTranscript(vdoId, { lang });
+    const data: TranscriptSegment[] = await fetchTranscript(vdoId, { lang });
 
     const Transcript: TranscriptItem[] = data.map((item) => ({
       text: item.text,

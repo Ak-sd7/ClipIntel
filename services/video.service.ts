@@ -1,8 +1,4 @@
-interface Result {
-  valid: boolean;
-  error?: string;
-  videoId?: string | null;
-}
+import { urlParseResult } from "./types";
 
 // https://www.youtube.com/watch?v=ABC123
 // │      │                │      │
@@ -11,7 +7,16 @@ interface Result {
 // │      └────────────────────────── hostname
 // └───────────────────────────────── protocol
 
-export const parseVideoUrl = (url: string): Result => {
+export const validateVideoId = (input: string): boolean => {
+  if (!input) return false;
+
+  const rawIdRegex = /^[A-Za-z0-9_-]{11}$/;
+  if (rawIdRegex.test(input)) return true;
+
+  return false;
+};
+
+export const parseVideoUrl = (url: string): urlParseResult => {
   let valid: boolean = false;
   let videoId: string | null = null;
   let error: string = "";
@@ -20,7 +25,7 @@ export const parseVideoUrl = (url: string): Result => {
     const hostName = parsedUrl.hostname.replace("www.", "");
     const path = parsedUrl.pathname;
 
-    if (hostName === "youtube.com") {
+    if (hostName === "youtube.com" || hostName === "m.youtube.com") {
       if (path === "/watch") {
         const id = parsedUrl.searchParams.get("v")?.trim() || null;
         videoId = id;
@@ -36,6 +41,7 @@ export const parseVideoUrl = (url: string): Result => {
       const sp = path.split("/");
       videoId = sp[1]?.trim() || null;
     }
+
     if (videoId === "" || videoId === null) {
       error = "URL is not correct";
       return {
@@ -44,14 +50,23 @@ export const parseVideoUrl = (url: string): Result => {
         error,
       };
     }
-	
+
+    if(!validateVideoId(videoId)) {
+      error = "video Id is not valid";
+      return {
+        valid: false,
+        videoId,
+        error
+      }
+    }
+
     valid = true;
     return {
       valid,
       videoId,
     };
-  } catch (error) {
-    console.log(error);
+  } catch (err) {
+    console.log(err);
     return {
       valid: false,
       videoId: null,

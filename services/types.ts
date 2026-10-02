@@ -74,3 +74,30 @@ export type TranscriptResult =
   | { status: "no_transcript_available" }
   | { status: "lang_not_available" }
   | { status: "disabled" };
+
+type MetadataErrorStatus =
+  Exclude<MetadataResult["status"], "success">;
+
+type TranscriptErrorStatus =
+  Exclude<TranscriptResult["status"], "success">;
+
+export type AnalyzeVideoResult = {
+  id?: string;
+  status: "success" | "partial" | "error";
+  message?: string;
+  data: {
+    metadata?: VideoMetaData;
+    transcript?: TranscriptItem[];
+  };
+  errors: {
+    url?: string;
+    metadata?: {
+      status: MetadataErrorStatus;
+      statusCode?: number;
+    };
+    transcript?: {
+      status: TranscriptErrorStatus;
+      statusCode?: number;
+    };
+  };
+};

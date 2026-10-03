@@ -1,9 +1,11 @@
+// url parsing
 export interface urlParseResult {
   valid: boolean;
   error?: string;
   videoId?: string | null;
 }
 
+// yt api v3
 export interface YouTubeVideoSnippetRaw {
   publishedAt: string;
   channelId: string;
@@ -40,6 +42,7 @@ export interface YouTubeApiResponse {
   };
 }
 
+// metadata
 export interface VideoMetaData {
   id: string;
   title: string;
@@ -60,6 +63,7 @@ export type MetadataResult =
   | { status: "api_error"; statusCode: number }
   | { status: "config_error" };
 
+// transcript
 export interface TranscriptItem {
   text: string;
   startInSeconds: number;
@@ -75,12 +79,11 @@ export type TranscriptResult =
   | { status: "lang_not_available" }
   | { status: "disabled" };
 
-type MetadataErrorStatus =
-  Exclude<MetadataResult["status"], "success">;
+type MetadataErrorStatus = Exclude<MetadataResult["status"], "success">;
 
-type TranscriptErrorStatus =
-  Exclude<TranscriptResult["status"], "success">;
+type TranscriptErrorStatus = Exclude<TranscriptResult["status"], "success">;
 
+// full vdo analysis
 export type AnalyzeVideoResult = {
   id?: string;
   status: "success" | "partial" | "error";
@@ -100,4 +103,19 @@ export type AnalyzeVideoResult = {
       statusCode?: number;
     };
   };
+};
+
+// chunking
+export type TranscriptChunk = {
+  id: string;
+  videoId: string;
+  text: string;
+
+  startTime: number;
+  endTime: number;
+
+  segmentStartIndex: number;
+  segmentEndIndex: number;
+
+  tokenCount: number;
 };

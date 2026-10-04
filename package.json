@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@huggingface/transformers": "^4.3.0",
+    "@qdrant/js-client-rest": "^1.19.0",
     "dotenv": "^17.4.2",
     "js-tiktoken": "^1.0.21",
     "lucide-react": "^1.41.0",

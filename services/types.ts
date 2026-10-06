@@ -124,5 +124,7 @@ export type TranscriptChunk = {
 export type QdrantPoint = {
   id: string,
   vector: number[],
-  payload: Omit<TranscriptChunk, 'id'>;
+  payload: Omit<TranscriptChunk, "id"> & {
+    chunkId: string;
+  },
 }

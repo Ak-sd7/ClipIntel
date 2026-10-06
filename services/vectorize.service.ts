@@ -4,9 +4,10 @@ import { QdrantPoint, TranscriptChunk } from "./types";
 export const vectorizeChunk = async (chunks: TranscriptChunk[]): Promise<QdrantPoint[]> => {
 	const points = await Promise.all(
 	chunks.map(async (chunk) => ({
-		id: chunk.id,
+		id: crypto.randomUUID(),
 		vector: await generateEmbedding(chunk.text),
 		payload: {
+			chunkId: chunk.id,
 			videoId: chunk.videoId,
 			text: chunk.text,
 			startTime: chunk.startTime,

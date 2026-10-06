@@ -119,3 +119,10 @@ export type TranscriptChunk = {
 
   tokenCount: number;
 };
+
+// upsert point
+export type QdrantPoint = {
+  id: string,
+  vector: number[],
+  payload: Omit<TranscriptChunk, 'id'>;
+}

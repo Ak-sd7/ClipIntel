@@ -1,4 +1,5 @@
 import { QdrantClient } from "@qdrant/js-client-rest";
+import { QdrantPoint } from "./types";
 
 export const client = new QdrantClient({
   url: process.env.QDRANT_URL!,
@@ -8,7 +9,7 @@ export const client = new QdrantClient({
 export const COLLECTION_NAME = "video_transcripts";
 
 export const createCollection = async () => {
-  const {exists} = await client.collectionExists(COLLECTION_NAME);
+  const { exists } = await client.collectionExists(COLLECTION_NAME);
 
   if (!exists) {
     await client.createCollection(COLLECTION_NAME, {
@@ -22,13 +23,7 @@ export const createCollection = async () => {
   }
 };
 
-export const upsertChunks = async (
-  points: {
-    id: string;
-    vector: number[];
-    payload: Record<string, unknown>;
-  }[]
-) => {
+export const upsertChunks = async (points: QdrantPoint[]) => {
   await client.upsert(COLLECTION_NAME, {
     wait: true,
     points,

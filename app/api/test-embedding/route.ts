@@ -4,6 +4,7 @@ import { transcriptChunk } from "@/services/transcript.chunk.service";
 import { vectorizeChunk } from "@/services/vectorize.service";
 import { upsertChunks } from "@/services/qdrant.service";
 import { TranscriptItem } from "@/services/types";
+import { retrieveChunks } from "@/services/retrieval.service";
 
 const cosineSimilarity = (a: number[], b: number[]): number => {
   let dotProduct = 0;
@@ -19,92 +20,99 @@ const cosineSimilarity = (a: number[], b: number[]): number => {
   return dotProduct / (Math.sqrt(magnitudeA) * Math.sqrt(magnitudeB));
 };
 
-export async function GET() {
-  // -----------------------------
-  // 1. Test embedding similarity
-  // -----------------------------
+const chunks = await retrieveChunks(
+  "How does the creator hook viewers?",
+  ["test-video-123", "another-video-id"],
+);
 
-  const embedding1 = await generateEmbedding(
-    "How do I increase YouTube engagement?",
-  );
+console.log(chunks);
 
-  const embedding2 = await generateEmbedding(
-    "Tips for getting more views and interaction on YouTube",
-  );
+// export async function GET() {
+//   // -----------------------------
+//   // 1. Test embedding similarity
+//   // -----------------------------
 
-  const embedding3 = await generateEmbedding(
-    "How to cook pasta",
-  );
+//   const embedding1 = await generateEmbedding(
+//     "How do I increase YouTube engagement?",
+//   );
 
-  const youtubeSimilarity = cosineSimilarity(
-    embedding1,
-    embedding2,
-  );
+//   const embedding2 = await generateEmbedding(
+//     "Tips for getting more views and interaction on YouTube",
+//   );
 
-  const cookingSimilarity = cosineSimilarity(
-    embedding1,
-    embedding3,
-  );
+//   const embedding3 = await generateEmbedding(
+//     "How to cook pasta",
+//   );
 
-  // -----------------------------
-  // 2. Test transcript chunking
-  // -----------------------------
+//   const youtubeSimilarity = cosineSimilarity(
+//     embedding1,
+//     embedding2,
+//   );
 
-  const transcript: TranscriptItem[] = [
-    {
-      text: "The first thing you need to do is create a strong hook.",
-      startInSeconds: 0,
-      formattedTimestamp: "00:00",
-      durationInSeconds: 4,
-    },
-    {
-      text: "Your first few seconds are extremely important because they determine whether people keep watching.",
-      startInSeconds: 4,
-      formattedTimestamp: "00:04",
-      durationInSeconds: 6,
-    },
-    {
-      text: "You should also make sure your title and thumbnail match the promise of the video.",
-      startInSeconds: 10,
-      formattedTimestamp: "00:10",
-      durationInSeconds: 6,
-    },
-  ];
+//   const cookingSimilarity = cosineSimilarity(
+//     embedding1,
+//     embedding3,
+//   );
 
-  const videoId = "test-video-123";
+//   // -----------------------------
+//   // 2. Test transcript chunking
+//   // -----------------------------
 
-  const chunks = transcriptChunk(
-    transcript,
-    videoId,
-  );
+//   const transcript: TranscriptItem[] = [
+//     {
+//       text: "The first thing you need to do is create a strong hook.",
+//       startInSeconds: 0,
+//       formattedTimestamp: "00:00",
+//       durationInSeconds: 4,
+//     },
+//     {
+//       text: "Your first few seconds are extremely important because they determine whether people keep watching.",
+//       startInSeconds: 4,
+//       formattedTimestamp: "00:04",
+//       durationInSeconds: 6,
+//     },
+//     {
+//       text: "You should also make sure your title and thumbnail match the promise of the video.",
+//       startInSeconds: 10,
+//       formattedTimestamp: "00:10",
+//       durationInSeconds: 6,
+//     },
+//   ];
 
-  // -----------------------------
-  // 3. Generate embeddings
-  // -----------------------------
+//   const videoId = "test-video-123";
 
-  const points = await vectorizeChunk(chunks);
+//   const chunks = transcriptChunk(
+//     transcript,
+//     videoId,
+//   );
 
-  // -----------------------------
-  // 4. Store in Qdrant
-  // -----------------------------
+//   // -----------------------------
+//   // 3. Generate embeddings
+//   // -----------------------------
 
-  await upsertChunks(points);
+//   const points = await vectorizeChunk(chunks);
 
-  return NextResponse.json({
-    status: "success",
+//   // -----------------------------
+//   // 4. Store in Qdrant
+//   // -----------------------------
 
-    similarity: {
-      youtubeSimilarity,
-      cookingSimilarity,
-    },
+//   await upsertChunks(points);
 
-    chunks: {
-      count: chunks.length,
-      data: chunks,
-    },
+//   return NextResponse.json({
+//     status: "success",
 
-    qdrant: {
-      pointsUpserted: points.length,
-    },
-  });
-}
+//     similarity: {
+//       youtubeSimilarity,
+//       cookingSimilarity,
+//     },
+
+//     chunks: {
+//       count: chunks.length,
+//       data: chunks,
+//     },
+
+//     qdrant: {
+//       pointsUpserted: points.length,
+//     },
+//   });
+// }

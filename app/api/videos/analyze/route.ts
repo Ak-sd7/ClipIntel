@@ -3,10 +3,15 @@ import { AnalyzeVideoResult, urlParseResult } from "@/services/types";
 import { parseVideoUrl } from "@/services/video.service";
 import { fetchMetaData } from "@/services/youtube.service";
 import { NextRequest, NextResponse } from "next/server";
+import { ingestTranscript } from "@/services/ingestion.service";
 
 type AnalyzeResponse = {
   status: "success" | "partial" | "error";
   message?: string;
+  errors?: {
+    videoA?: string;
+    videoB?: string;
+  };
   videos?: {
     videoA: AnalyzeVideoResult;
     videoB: AnalyzeVideoResult;
@@ -72,6 +77,16 @@ export const POST = async (
       fetchVideoTranscript(videoBId),
     ]);
 
+    const [aIngestion, bIngestion] = await Promise.all([
+      aScript.status === "success"
+        ? ingestTranscript(videoAId, aScript.data)
+        : Promise.resolve(null),
+
+      bScript.status === "success"
+        ? ingestTranscript(videoBId, bScript.data)
+        : Promise.resolve(null),
+    ]);
+
     const videoA: AnalyzeVideoResult = {
       id: videoAId,
       status: "error",
@@ -127,6 +142,14 @@ export const POST = async (
           ? { statusCode: bScript.statusCode }
           : {}),
       };
+    }
+
+    if (aIngestion) {
+      videoA.ingestion = aIngestion;
+    }
+
+    if (bIngestion) {
+      videoB.ingestion = bIngestion;
     }
 
     videoA.status = getVideoStatus(videoA);

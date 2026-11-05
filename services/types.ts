@@ -103,6 +103,7 @@ export type AnalyzeVideoResult = {
       statusCode?: number;
     };
   };
+  ingestion?: "already_indexed" | "indexed";
 };
 
 // chunking

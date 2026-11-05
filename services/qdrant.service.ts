@@ -29,3 +29,21 @@ export const upsertChunks = async (points: QdrantPoint[]) => {
     points,
   });
 };
+
+export const videoHasChunks = async (videoId: string): Promise<boolean> => {
+  const result = await client.scroll(COLLECTION_NAME, {
+    filter: {
+      must: [
+        {
+          key: "videoId",
+          match: { value: videoId },
+        },
+      ],
+    },
+    limit: 1,
+    with_payload: false,
+    with_vector: false,
+  });
+
+  return result.points.length > 0;
+};

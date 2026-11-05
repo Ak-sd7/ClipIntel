@@ -5,7 +5,7 @@ import { fetchMetaData } from "@/services/youtube.service";
 import { NextRequest, NextResponse } from "next/server";
 import { ingestTranscript } from "@/services/ingestion.service";
 
-type AnalyzeResponse = {
+export type AnalyzeResponse = {
   status: "success" | "partial" | "error";
   message?: string;
   errors?: {

@@ -9,23 +9,42 @@ export const createPayloadIndexes = async () => {
   });
 };
 
-export const retrieveChunks = async (question: string, vdoIds: string[]) => {
+export const retrieveChunks = async (
+  question: string,
+  videoIds: string[],
+) => {
   const queryVector = await generateEmbedding(question);
 
-  const result = await client.query(COLLECTION_NAME, {
-    query: queryVector,
-    limit: 10,
-    with_payload: true,
-    filter: {
-      should: vdoIds.map((videoId) => ({
-        key: "videoId",
-        match: { value: videoId },
-      })),
-    },
-  });
+  const results = await Promise.all(
+    videoIds.map(async (videoId) => {
+      const result = await client.query(COLLECTION_NAME, {
+        query: queryVector,
+        limit: 5,
+        with_payload: true,
+        filter: {
+          must: [
+            {
+              key: "videoId",
+              match: { value: videoId },
+            },
+          ],
+        },
+      });
 
-  return result.points.map((point) => ({
-    score: point.score,
-    ...point.payload,
-  }));
+      return result.points.map((point) => {
+        const payload = point.payload;
+
+        return {
+          score: point.score,
+          videoId: String(payload?.videoId ?? ""),
+          chunkId: String(payload?.chunkId ?? ""),
+          text: String(payload?.text ?? ""),
+          startTime: Number(payload?.startTime ?? 0),
+          endTime: Number(payload?.endTime ?? 0),
+        };
+      });
+    }),
+  );
+
+  return results.flat().sort((a, b) => b.score - a.score);
 };

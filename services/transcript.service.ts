@@ -5,6 +5,7 @@ import {
   YoutubeTranscriptNotAvailableError,
   YoutubeTranscriptNotAvailableLanguageError,
   YoutubeTranscriptVideoUnavailableError,
+  listLanguages,
 } from "youtube-transcript-plus";
 import { TranscriptItem, TranscriptResult } from "./types";
 
@@ -26,9 +27,31 @@ export const fetchVideoTranscript = async (
   lang: string = "en",
 ): Promise<TranscriptResult> => {
   try {
-    const data: TranscriptSegment[] = await fetchTranscript(vdoId, { lang });
+    let data: TranscriptSegment[];
 
-    const Transcript: TranscriptItem[] = data.map((item) => ({
+    try {
+      data = await fetchTranscript(vdoId, { lang });
+    } catch (error) {
+      if (!(error instanceof YoutubeTranscriptNotAvailableLanguageError)) {
+        throw error;
+      }
+
+      const languages = await listLanguages(vdoId);
+
+      if (languages.length === 0) {
+        return { status: "no_transcript_available" };
+      }
+
+      const fallbackLanguage =
+        languages.find((item) => item.languageCode === "en")?.languageCode ??
+        languages[0].languageCode;
+
+      data = await fetchTranscript(vdoId, {
+        lang: fallbackLanguage,
+      });
+    }
+
+    const transcript: TranscriptItem[] = data.map((item) => ({
       text: item.text,
       startInSeconds: item.offset,
       formattedTimestamp: formatTimestamp(item.offset),
@@ -37,38 +60,34 @@ export const fetchVideoTranscript = async (
 
     return {
       status: "success",
-      data: Transcript,
+      data: transcript,
     };
   } catch (error) {
     if (error instanceof YoutubeTranscriptVideoUnavailableError) {
       console.error("Video is unavailable:", error.message);
-      return {
-        status: "not_found",
-      };
-    } else if (error instanceof YoutubeTranscriptDisabledError) {
-      console.error("Transcripts are disabled for this video:", error.message);
-      return {
-        status: "disabled",
-      };
-    } else if (error instanceof YoutubeTranscriptNotAvailableError) {
-      console.error("No transcript available:", error.message);
-      return {
-        status: "no_transcript_available",
-      };
-    } else if (error instanceof YoutubeTranscriptNotAvailableLanguageError) {
-      console.error(
-        "Transcript not available in the specified language:",
-        error.message,
-      );
-      return {
-        status: "lang_not_available",
-      };
-    } else {
-      console.error("An unexpected error occurred:", error);
-      return {
-        status: "api_error",
-        statusCode: 502,
-      };
+      return { status: "not_found" };
     }
+
+    if (error instanceof YoutubeTranscriptDisabledError) {
+      console.error("Transcripts are disabled:", error.message);
+      return { status: "disabled" };
+    }
+
+    if (error instanceof YoutubeTranscriptNotAvailableError) {
+      console.error("No transcript available:", error.message);
+      return { status: "no_transcript_available" };
+    }
+
+    if (error instanceof YoutubeTranscriptNotAvailableLanguageError) {
+      console.error("Transcript language unavailable:", error.message);
+      return { status: "lang_not_available" };
+    }
+
+    console.error("Unexpected transcript error:", error);
+
+    return {
+      status: "api_error",
+      statusCode: 502,
+    };
   }
 };
